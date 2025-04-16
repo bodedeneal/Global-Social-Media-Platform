@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:3000/api/posts'; // Replace with your backend URL
+const API_URL = 'https://global-social-media-platform.onrender.com'; // Replace with your backend URL
 
 // Fetch and display all posts
 function fetchPosts() {
