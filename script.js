@@ -84,6 +84,9 @@ document.getElementById('uploadButton').addEventListener('click', () => {
 
         savePosts();
         renderGallery();
+
+        // Clear the file input after upload
+        fileInput.value = '';
     };
     reader.onerror = function () {
         console.error('Error reading the file:', reader.error);
