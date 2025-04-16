@@ -24,10 +24,6 @@ h1 {
     margin-bottom: 30px;
 }
 
-#imageUpload {
-    margin-right: 10px;
-}
-
 #gallery {
     display: flex;
     flex-wrap: wrap;
@@ -36,7 +32,7 @@ h1 {
 }
 
 .card {
-    width: 200px;
+    width: 220px;
     background: #fff;
     border: 1px solid #ddd;
     border-radius: 8px;
@@ -53,10 +49,6 @@ h1 {
 .card .info {
     padding: 10px;
     text-align: center;
-}
-
-.card .info p {
-    margin: 5px 0;
 }
 
 .card button {
