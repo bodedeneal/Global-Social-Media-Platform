@@ -1,98 +1,74 @@
-// Load existing posts from localStorage
-let posts = JSON.parse(localStorage.getItem('posts')) || [];
+const API_URL = 'http://localhost:3000/api/posts'; // Replace with your backend URL
 
-// Function to save posts back to localStorage
-function savePosts() {
-    localStorage.setItem('posts', JSON.stringify(posts));
+// Fetch and display all posts
+function fetchPosts() {
+    fetch(API_URL)
+        .then(response => response.json())
+        .then(posts => {
+            const gallery = document.getElementById('gallery');
+            gallery.innerHTML = ''; // Clear the gallery
+
+            posts.forEach(post => {
+                const card = document.createElement('div');
+                card.className = 'card';
+
+                const commentsList = post.comments.map(comment => `<li>${comment}</li>`).join('');
+
+                card.innerHTML = `
+                    <img src="${post.imageUrl}" alt="Uploaded Image">
+                    <div class="info">
+                        <p>Likes: <span class="likes">${post.likes}</span></p>
+                        <p>Shares: <span class="shares">${post.shares}</span></p>
+                        <div>
+                            <p>Comments:</p>
+                            <ul class="comments-list">${commentsList}</ul>
+                        </div>
+                        <button class="like-btn">Like</button>
+                        <button class="comment-btn">Comment</button>
+                        <button class="share-btn">Share</button>
+                    </div>
+                `;
+
+                // Like a post
+                card.querySelector('.like-btn').addEventListener('click', () => {
+                    fetch(`${API_URL}/${post.id}/like`, { method: 'POST' })
+                        .then(() => fetchPosts());
+                });
+
+                // Comment on a post
+                card.querySelector('.comment-btn').addEventListener('click', () => {
+                    const comment = prompt('Enter your comment:');
+                    if (comment) {
+                        fetch(`${API_URL}/${post.id}/comment`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ comment }),
+                        }).then(() => fetchPosts());
+                    }
+                });
+
+                document.getElementById('gallery').appendChild(card);
+            });
+        });
 }
 
-// Function to render the gallery
-function renderGallery() {
-    const gallery = document.getElementById('gallery');
-    gallery.innerHTML = ''; // Clear the gallery
-
-    posts.forEach((post, index) => {
-        const card = document.createElement('div');
-        card.className = 'card';
-
-        // Create a list of comments
-        const commentsList = post.comments.map(comment => `<li>${comment}</li>`).join('');
-
-        card.innerHTML = `
-            <img src="${post.image}" alt="Uploaded Image">
-            <div class="info">
-                <p>Likes: <span class="likes">${post.likes}</span></p>
-                <p>Shares: <span class="shares">${post.shares}</span></p>
-                <div>
-                    <p>Comments:</p>
-                    <ul class="comments-list">${commentsList}</ul>
-                </div>
-                <button class="like-btn">Like</button>
-                <button class="comment-btn">Comment</button>
-                <button class="share-btn">Share</button>
-            </div>
-        `;
-
-        // Add event listeners for buttons
-        card.querySelector('.like-btn').addEventListener('click', () => {
-            posts[index].likes += 1;
-            savePosts();
-            renderGallery();
-        });
-
-        card.querySelector('.comment-btn').addEventListener('click', () => {
-            const comment = prompt('Enter your comment:');
-            if (comment) {
-                posts[index].comments.push(comment);
-                savePosts();
-                renderGallery();
-            }
-        });
-
-        card.querySelector('.share-btn').addEventListener('click', () => {
-            posts[index].shares += 1;
-            savePosts();
-            alert('Image shared successfully!');
-            renderGallery();
-        });
-
-        gallery.appendChild(card);
-    });
-}
-
-// Handle image upload
+// Upload a new post
 document.getElementById('uploadButton').addEventListener('click', () => {
-    const fileInput = document.getElementById('imageUpload');
-    const file = fileInput.files[0];
-
-    if (!file) {
-        alert('Please select an image to upload.');
-        console.error('No file selected.');
+    const imageUrl = document.getElementById('imageUrl').value;
+    if (!imageUrl) {
+        alert('Please enter an image URL.');
         return;
     }
 
-    const reader = new FileReader();
-    reader.onload = function (e) {
-        const imageUrl = e.target.result;
-
-        posts.push({
-            image: imageUrl,
-            likes: 0,
-            comments: [],
-            shares: 0,
-        });
-
-        savePosts();
-        renderGallery();
-
-        // Clear the file input after upload
-        fileInput.value = '';
-    };
-    reader.onerror = function () {
-        console.error('Error reading the file:', reader.error);
-    };
-    reader.readAsDataURL(file);
+    fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageUrl }),
+    }).then(() => {
+        document.getElementById('imageUrl').value = '';
+        fetchPosts();
+    });
 });
 
-// Initial render
-renderGallery();
+// Initial fetch
+fetchPosts();
