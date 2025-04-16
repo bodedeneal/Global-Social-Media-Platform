@@ -54,20 +54,32 @@ function fetchPosts() {
 
 // Upload a new post
 document.getElementById('uploadButton').addEventListener('click', () => {
-    const imageUrl = document.getElementById('imageUrl').value;
-    if (!imageUrl) {
-        alert('Please enter an image URL.');
+    const fileInput = document.getElementById('imageUpload');
+    const file = fileInput.files[0];
+
+    if (!file) {
+        alert('Please select an image to upload.');
         return;
     }
 
-    fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ imageUrl }),
-    }).then(() => {
-        document.getElementById('imageUrl').value = '';
-        fetchPosts();
-    });
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        const imageUrl = e.target.result; // Convert image to Base64
+
+        fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ imageUrl }),
+        })
+            .then(() => {
+                fileInput.value = ''; // Clear the file input
+                fetchPosts();
+            });
+    };
+    reader.onerror = function () {
+        console.error('Error reading the file:', reader.error);
+    };
+    reader.readAsDataURL(file);
 });
 
 // Initial fetch
